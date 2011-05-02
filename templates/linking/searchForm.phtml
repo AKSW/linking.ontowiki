@@ -1,0 +1,69 @@
+<?php  if(isset($this->develop)) { ?>
+	<div id=linking_develop_div >
+		<!--  
+		only execs if ini setting develop is true 
+		or should but does not XXX
+		<button onclick='new linking().__test_dt_render_result();' >test dt render</button>
+		-->
+	</div>
+<?php } ?>
+<style>
+
+	#linking-limit,
+	#linking-kw ,
+	#linking-ep 
+	{  
+		min-width:65px; 
+		width:100%;
+	}
+</style>
+<!-- false return prevents normal submit by UA -->
+<form onsubmit='new linking().dt_formfind();return false;'>
+		<?php 
+			$i = "<input"; $p = "id=linking_";	$t = "type=hidden"; $v = "value='";
+			
+			print "$i $t ${p}module_url $v" . $this->moduleUrl . "'>";
+			print "$i $t ${p}context $v" . $this->context . "'>";
+			print "$i $t ${p}model $v" . $this->Model . "'>";
+			print "$i $t ${p}resource $v" . $this->Resource . "'>";
+		?>
+	<table cellspacing=0 cellpadding=0 border=0>
+		<tr>
+			<td><label for='linking-ep'>Endpunkt</label></td>
+			<td>
+				<!-- web service to employ as search backend -->
+				<select id='linking-ep' >
+					<option value='dbpedia'>DBpedia</option>
+					<option value='sindice'>Sindice</option>
+					<option value='swoogle'>Swoogle</option>
+					<option value='all'>Alle</option>
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td><label for='linking-limit'>Limit</label></td>
+			<td>
+				<!-- maximal number of results -->
+				<select id='linking-limit' >
+					<option value='10'  >10</option>
+					<option value='25'  >25</option>
+					<option value='50'  >50</option>
+					<option value='75'  >75</option>
+					<option value='100' >100</option>
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td><label for='linking-kw'>Suche</label></td>
+			<td>
+				<!-- Keywords , possibly selected from active resource -->
+				<input type='text' id='linking-kw'
+					value='<?php echo str_replace("'", '"', $this->default_keywords); ?>' >
+			</td>
+		</tr>
+		<tr>
+			<!-- the submit button -->
+			<td colspan=2><input type='submit' value='Suchen'></td>
+		</tr>
+	</table>
+</form>

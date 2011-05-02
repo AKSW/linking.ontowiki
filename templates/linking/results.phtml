@@ -1,0 +1,35 @@
+<?php 
+	
+	print "{ results: [ \n";
+		
+	$rows = $this->results['rows'];
+	$len = count($rows);
+	
+	for($i=0;$i<$len;$i++)
+	{
+		$label = str_replace("'", "", $rows[$i]['label']);
+		$uri = $rows[$i]['uri'];
+		if(isset($rows[$i]['score'])) $score = $rows[$i]['score'];
+		else $score = 0;
+		
+		print "[ '$label' , '$uri' , $score , '' ] " ;
+		
+		if($i < $len-1) print " , \n";
+	}
+	
+	print "\n],\n properties : [ \n" ;
+	
+	$props = $this->import_properties;
+	$len = count($props);
+	$i = 0;
+	
+	foreach($props as $k => $v)
+	{
+		$i++;
+		print "['" . $k . "','" . $v . "']";
+		if($i < $len ) print ",\n";
+	}	
+	
+	print "\n]\n}";
+	
+?>
