@@ -8,13 +8,15 @@ require_once 'search/SearchEngine.php';
  */
 class SindiceSearchEngine extends SearchEngine
 {
+	protected $URL_PREFIX = "http://api.sindice.com/v2/search?";
 	/**
 	 * probe wether connection and data format are ok
 	 * @see SearchEngine::probe()
 	 */
 	public function probe()
 	{
-		$this->url = "http://api.sindice.com/v2/search?q=" . urlencode($this->kw) . "&qt=term&page=1";	
+		$this->url = $this->URL_PREFIX . "q=" . $this->kw_enc . "&qt=term&page=1";
+		$this->util->debug($this->url);
 		$this->loadURL();
 		$out = $this->parse();
 	}
@@ -28,7 +30,7 @@ class SindiceSearchEngine extends SearchEngine
 		$nresults = 0;
 		for($i=1;$i<=10;$i++)
 		{
-			$this->url = "http://api.sindice.com/v2/search?q=" . urlencode($this->kw) . "&qt=term&page=$i";	
+			$this->url = $this->URL_PREFIX . "q=" . $this->kw_enc . "&qt=term&page=$i";	
 			$this->loadURL();
 			$out = $this->parse();
 			$m = count($out);

@@ -7,30 +7,47 @@ require_once 'search/SearchEngine.php';
  */
 class SwoogleSearchEngine extends SearchEngine
 {
+	protected $URL_PREFIX = "http://logos.cs.umbc.edu:8080/swoogle31/q?";
+	// only 25 results with demo key
+	protected $SWOOGLE_KEY = "demo";
+	protected $LOOP_START = 1; 	// i =
+	protected $LOOP_LIMIT = 21; // i <=
+	protected $LOOP_INC = 10; 	// i +=
+	
+	public function probe()
+	{
+		$this->url = $this->URL_PREFIX . 
+		"queryType=search_swt&searchStart=1&searchString=" . $this->kw_enc .
+		"&key=" . $this->SWOOGLE_KEY;   
+		$page = $this->loadURL();
+		$this->parse();
+	}
+	
 	/**
 	 * Abstract in base class, gets URIs
 	 * from Swoogle.
 	 * @see SearchEngine::search()
 	 */
-	public function search($keywords, $limit)
+	public function search()
 	{
-		if($limit < 10 ) $limit = 10;
-		if($limit > 100) $limit = 100;
-		
-		$keywords = urlencode($keywords);
-		
-		$this->httpheader = array("Accept: application/rdf+xml");
-		
+		$u = $this->util;
 		$rows = array();
 		$nresults = 0;
-		for($i=1;$i<$limit;$i+=10)
+		for($i=$this->LOOP_START; $i<=$this->LOOP_LIMIT; $i+=$this->LOOP_INC)
 		{
-			$base = "http://logos.cs.umbc.edu:8080/swoogle31/q?";
-			$this->url = $base . "queryType=search_swt&searchStart=$i&searchString=$keywords&key=demo";   
+			$u->debug("search run $i");
+			$this->url = $this->URL_PREFIX . 
+			"queryType=search_swt&searchStart=$i" .
+			"&searchString=" . $this->kw_enc . "&key=" . $this->SWOOGLE_KEY;   
 			$page = $this->loadURL();
-			$this->util->debug("page is :" . $this->page);
-			$this->parse();
+			if(($m = count($out = $this->parse())) == 0) break; // no more results
+			$nresults += $m;
+			$rows = array_merge($rows, $out); 
+			if($nresults >= $this->limit) break; // enough results
 		}
+		$res = array('cols' => array('label', 'uri', 'link'), 'rows' => $rows);
+		$u->debug(print_r($res,true));
+		return $res;
 	}
 	
 	/**
@@ -41,30 +58,19 @@ class SwoogleSearchEngine extends SearchEngine
 	 */
 	private function parse()
 	{
-		$doc = new DOMDocument('1.0', 'utf-8');
-		$doc->loadXML($this->page);
-		$rows = array();
-		foreach ($doc->documentElement->childNodes as $node)
-		{
-			if(strcasecmp($node->nodeName, 'swoogle:QueryResponse') == 0 )
-			{
-				foreach($node->childNodes as $xnode)
-				{
-					if(strcasecmp($xnode->nodeName, 'swoogle:hasSearchTotalResults')==0)
-					{
-						$this->util->debug("total:" . $xnode->textContent );	
-					}
-					else if(strcasecmp($xnode->nodeName, 'swoogle:hasSearchStart') == 0)
-					{
-						$this->util->debug("start:" . $xnode->textContent );
-					}
-					else if(strcasecmp($xnode->nodeName, 'swoogle:hasResult')==0)
-					{
-						
-					}
-				}
-			}
-		}
+		$xml = $this->page;
+		require_once('search/SwoogleSearchXML.php');
+		$parser = xml_parser_create();
+		$callback = new SwoogleSearchXML();
+		xml_set_object($parser,$callback);
+		xml_set_element_handler($parser,'start_element','end_element');
+		xml_set_character_data_handler($parser,'character_data');
+		xml_parser_set_option($parser,XML_OPTION_CASE_FOLDING,false);
+		
+		// $xml is the whole document ,true says 'last chunk' ( because there is just one here )
+		xml_parse($parser,$xml,true);
+		
+		return $callback->getResults();
 	}
 	
 	

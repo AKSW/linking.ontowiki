@@ -13,6 +13,7 @@ abstract class SearchEngine
 	protected $ch;
 	protected $httpheader;
 	protected $kw;
+	protected $kw_enc;
 	protected $limit;
 	
 	/**
@@ -23,6 +24,9 @@ abstract class SearchEngine
 		$this->ch  = curl_init();
 		$this->util = $u;
 		$this->kw = $kw;
+		$this->kw_enc = urlencode($kw);
+		if($limit > 100) $limit = 100;
+		if($limit < 10) $limit = 10;
 		$this->limit = $limit;
 		$this->httpheader = array("Accept: application/rdf+xml");
 	}
