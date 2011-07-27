@@ -190,7 +190,10 @@ linking = function() {
 			eval("var _data = " + data);
 			p = _data.properties;
 			r = _data.results;
-			if(r.length == 0) throw _.log(_.NOTHING_FOUND_MSG);
+			if(r.length == 0) {
+				alert(_.NOTHING_FOUND_MSG);
+				throw _.log(_.NOTHING_FOUND_MSG);
+			}
 			f(_data);
 		});
 	};
